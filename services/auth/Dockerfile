@@ -2,18 +2,23 @@ FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
+COPY go.work go.work.sum ./
+COPY config/go.mod config/go.sum ./config/
+COPY contract/go.mod ./contract/
+COPY services/auth/go.mod services/auth/go.sum ./services/auth/
 RUN go mod download
 
-COPY . .
+COPY config ./config
+COPY contract ./contract
+COPY services/auth ./services/auth
 
 RUN CGO_ENABLED=0 GOOS=linux \
-    go build -o /bin/auth ./cmd/server
+    go build -o /bin/auth ./services/auth/cmd/server
 
 FROM gcr.io/distroless/static-debian12
 
 COPY --from=builder /bin/auth /auth
 
-EXPOSE 3001
+EXPOSE 8080
 
 ENTRYPOINT ["/auth"]
