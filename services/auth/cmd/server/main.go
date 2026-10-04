@@ -3,70 +3,64 @@ package main
 import (
 	"config"
 	"context"
-	"database/sql"
-	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
-	authcontract "contract/api/auth"
+	"auth/internal/app"
+	"auth/internal/platform/betterauth"
+	"auth/internal/platform/db"
 
-	godevauth "github.com/go-dev-auth/go-dev-auth"
-	"github.com/gorilla/mux"
-
-	"github.com/go-dev-auth/go-dev-auth/storage/sqlstore"
+	"gorm.io/gorm/logger"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func main() {
-	config, err := config.InitConfig()
+	cfg, err := config.InitConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	db, err := sql.Open(config.AuthConfig.DatabaseDriver, config.AuthConfig.DatabaseURL)
+	gormDB, err := db.Open(cfg.AuthConfig.DatabaseURL, logger.Warn)
+	if err != nil {
+		log.Fatal(err)
+	}
+	sqlDB, err := gormDB.DB()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer sqlDB.Close()
+
+	auth, err := betterauth.New(cfg.AuthConfig, sqlDB)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err := db.Ping(); err != nil {
-		log.Fatal(err)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	stopCleanup := auth.StartCleanup(ctx, time.Hour)
+	defer stopCleanup()
+
+	srv := &http.Server{
+		Addr:              ":8080",
+		Handler:           app.NewRouter(auth),
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	store := sqlstore.New(
-		db,
-		sqlstore.Postgres,
-		nil,
-	)
+	go func() {
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		srv.Shutdown(shutdownCtx)
+	}()
 
-	auth, err := godevauth.New(godevauth.Config{
-		BaseURL:  config.AuthConfig.BaseURL,
-		Secret:   config.AuthConfig.Secret,
-		Database: store,
-
-		EmailAndPassword: godevauth.EmailPasswordConfig{
-			Enabled:           true,
-			MinPasswordLength: authcontract.Auth_Constants.MIN_PASSWORD_LENGTH,
-			MaxPasswordLength: authcontract.Auth_Constants.MAX_PASSWORD_LENGTH,
-		},
-	})
-
-	if err != nil {
+	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)
 	}
-
-	store.SetSchema(auth.Schema())
-
-	defer auth.StartCleanup(context.Background(), time.Hour)()
-
-	r := mux.NewRouter()
-
-	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
-	}).Methods("GET")
-
-	http.ListenAndServe(":8080", r)
 }
