@@ -1,0 +1,66 @@
+services:
+
+  auth:
+    build:
+      context: ./services/auth
+    ports:
+      - "3001:8080"
+    environment:
+      DATABASE_URL: postgres://auth_user:auth_password@postgres:5432/auth_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # users:
+  #   build:
+  #     context: ./services/users
+  #   ports:
+  #     - "3002:8080"
+  #   environment:
+  #     DATABASE_URL: postgres://users_user:users_password@postgres:5432/users_db
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+
+  # videos:
+  #   build:
+  #     context: ./services/videos
+  #   ports:
+  #     - "3003:8080"
+  #   environment:
+  #     DATABASE_URL: postgres://videos_user:videos_password@postgres:5432/videos_db
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+
+  # notifications:
+  #   build:
+  #     context: ./services/notifications
+  #   ports:
+  #     - "3004:8080"
+  #   environment:
+  #     DATABASE_URL: postgres://notifications_user:notifications_password@postgres:5432/notifications_db
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+
+  postgres:
+    image: postgres:18
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
