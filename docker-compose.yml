@@ -10,6 +10,7 @@ services:
       AUTH_DB_URL: postgres://auth_user:auth_password@postgres:5432/auth_db?sslmode=disable
       AUTH_DB_DRIVER: ${AUTH_DB_DRIVER}
       AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_BASE_URL: ${AUTH_BASE_URL}
     depends_on:
       postgres:
         condition: service_healthy

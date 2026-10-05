@@ -18,7 +18,7 @@ func InitConfig() (*Config, error) {
 			DatabaseURL:    loadConfigFromEnv("AUTH_DB_URL", ""),
 			DatabaseDriver: loadConfigFromEnv("AUTH_DB_DRIVER", "pgx"),
 			Secret:         loadConfigFromEnv("AUTH_SECRET", ""),
-			BaseURL:        loadConfigFromEnv("AUTH_BASE_URL", "http://localhost:8080"),
+			BaseURL:        loadConfigFromEnv("AUTH_BASE_URL", ""),
 		},
 	}, nil
 }

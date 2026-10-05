@@ -26,9 +26,6 @@ func New(cfg config.AuthConfig, db *sql.DB) (*godevauth.Auth, error) {
 			MaxPasswordLength: authcontract.Auth_Constants.MAX_PASSWORD_LENGTH,
 		},
 
-		// Short-lived EdDSA JWTs minted from a session (GET /api/auth/token)
-		// and verifiable offline via GET /api/auth/jwks. Sessions remain the
-		// source of truth; a JWT cannot be revoked, only expire.
 		Plugins: []godevauth.Plugin{
 			jwtplugin.New(jwtplugin.Options{ExpiresIn: 15 * time.Minute}),
 		},
