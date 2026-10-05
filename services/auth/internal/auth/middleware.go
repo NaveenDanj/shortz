@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strings"
+
+	"authclient"
 
 	godevauth "github.com/go-dev-auth/go-dev-auth"
 	jwtplugin "github.com/go-dev-auth/go-dev-auth/plugins/jwt"
@@ -37,7 +38,7 @@ func RequireAuth(a *godevauth.Auth) func(http.Handler) http.Handler {
 				err error
 			)
 
-			if token, ok := bearerToken(r); ok {
+			if token, ok := authclient.BearerToken(r); ok {
 				sd, err = sessionFromJWT(r.Context(), a, jwtp, token)
 			} else {
 				sd, err = a.GetSession(r)
@@ -56,11 +57,6 @@ func RequireAuth(a *godevauth.Auth) func(http.Handler) http.Handler {
 	}
 }
 
-func bearerToken(r *http.Request) (string, bool) {
-	token, ok := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
-	return token, ok && token != ""
-}
-
 func sessionFromJWT(ctx context.Context, a *godevauth.Auth, p *jwtplugin.Plugin, token string) (*godevauth.SessionData, error) {
 	if p == nil {
 		return nil, errors.New("jwt plugin not enabled")
@@ -72,39 +68,16 @@ func sessionFromJWT(ctx context.Context, a *godevauth.Auth, p *jwtplugin.Plugin,
 	}
 
 	base := a.Config().BaseURL
-	if iss, _ := claims["iss"].(string); iss != base {
-		return nil, errors.New("jwt: unexpected issuer")
+	parsed, err := authclient.ParseClaims(claims, base, base)
+	if err != nil {
+		return nil, err
 	}
-
-	if !audienceMatches(claims["aud"], base) {
-		return nil, errors.New("jwt: unexpected audience")
-	}
-
-	sub, _ := claims["sub"].(string)
-	if sub == "" {
-		return nil, errors.New("jwt: missing subject")
-	}
-
-	user, err := a.FindUserByID(ctx, sub)
+	user, err := a.FindUserByID(ctx, parsed.Subject)
 	if err != nil {
 		return nil, err
 	}
 
 	return &godevauth.SessionData{User: user}, nil
-}
-
-func audienceMatches(aud any, want string) bool {
-	switch v := aud.(type) {
-	case string:
-		return v == want
-	case []any:
-		for _, e := range v {
-			if s, _ := e.(string); s == want {
-				return true
-			}
-		}
-	}
-	return false
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
