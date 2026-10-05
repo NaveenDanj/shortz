@@ -4,4 +4,5 @@ use (
 	./contract
 	./services/auth
 	./config
+	./authclient
 )

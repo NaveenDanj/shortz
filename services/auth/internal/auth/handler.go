@@ -3,6 +3,7 @@ package auth
 import (
 	"net/http"
 
+	apiContract "contract/api"
 	authcontract "contract/api/auth"
 
 	"github.com/go-dev-auth/go-dev-auth/storage"
@@ -11,13 +12,10 @@ import (
 func Me(w http.ResponseWriter, r *http.Request) {
 	u, ok := UserFromContext(r.Context())
 	if !ok {
-		writeJSON(w, http.StatusUnauthorized, map[string]string{
-			"code":    "UNAUTHORIZED",
-			"message": "Authentication required",
-		})
+		apiContract.ResponseWriter(w, http.StatusUnauthorized, "Authentication required")
 		return
 	}
-	writeJSON(w, http.StatusOK, toContractUser(u))
+	apiContract.ResponseWithDataWriter(w, http.StatusOK, toContractUser(u))
 }
 
 func toContractUser(u *storage.User) authcontract.User {

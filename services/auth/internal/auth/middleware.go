@@ -2,11 +2,12 @@ package auth
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 
 	"authclient"
+
+	apiContract "contract/api"
 
 	godevauth "github.com/go-dev-auth/go-dev-auth"
 	jwtplugin "github.com/go-dev-auth/go-dev-auth/plugins/jwt"
@@ -45,10 +46,7 @@ func RequireAuth(a *godevauth.Auth) func(http.Handler) http.Handler {
 			}
 
 			if err != nil || sd == nil || sd.User == nil {
-				writeJSON(w, http.StatusUnauthorized, map[string]string{
-					"code":    "UNAUTHORIZED",
-					"message": "Authentication required",
-				})
+				apiContract.ResponseWriter(w, http.StatusUnauthorized, "Authentication required")
 				return
 			}
 
@@ -78,10 +76,4 @@ func sessionFromJWT(ctx context.Context, a *godevauth.Auth, p *jwtplugin.Plugin,
 	}
 
 	return &godevauth.SessionData{User: user}, nil
-}
-
-func writeJSON(w http.ResponseWriter, status int, v any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(v)
 }
