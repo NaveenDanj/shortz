@@ -20,6 +20,10 @@ func InitConfig() (*Config, error) {
 			Secret:         loadConfigFromEnv("AUTH_SECRET", ""),
 			BaseURL:        loadConfigFromEnv("AUTH_BASE_URL", ""),
 		},
+		UserConfig: UserConfig{
+			DatabaseURL:    loadConfigFromEnv("USERS_DB_URL", ""),
+			DatabaseDriver: loadConfigFromEnv("USERS_DB_DRIVER", "pgx"),
+		},
 	}, nil
 }
 
