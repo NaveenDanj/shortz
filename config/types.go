@@ -2,6 +2,7 @@ package config
 
 type Config struct {
 	AuthConfig AuthConfig
+	UserConfig UserConfig
 }
 
 type AuthConfig struct {
@@ -9,4 +10,9 @@ type AuthConfig struct {
 	DatabaseDriver string
 	Secret         string
 	BaseURL        string
+}
+type UserConfig struct {
+	DatabaseURL    string
+	DatabaseDriver string
+	PORT           string
 }
