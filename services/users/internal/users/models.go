@@ -1,7 +1,7 @@
 package users
 
 type Users struct {
-	Id             string   `gorm:"primaryKey;type:text"` // auth user id (JWT sub)
+	Id             string   `gorm:"primaryKey;type:text"`
 	Username       string   `gorm:"unique;not null"`
 	DisplayName    string   `gorm:"not null"`
 	AvatarKey      string   `gorm:"not null"`

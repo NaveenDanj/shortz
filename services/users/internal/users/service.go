@@ -8,6 +8,7 @@ import (
 
 type Service interface {
 	GetMe(ctx context.Context, userID string) (*apiUsers.User, error)
+	UpdateProfile(ctx context.Context, userID string, profile *apiUsers.UpdateUserRequest) error
 }
 
 type service struct {
@@ -43,4 +44,18 @@ func (s *service) GetMe(ctx context.Context, userID string) (*apiUsers.User, err
 		CreatedAt:      user.CreatedAt,
 		UpdatedAt:      user.UpdatedAt,
 	}, nil
+}
+
+func (s *service) UpdateProfile(ctx context.Context, userID string, profile *apiUsers.UpdateUserRequest) error {
+	err := s.repo.UpdateProfile(ctx, userID, profile)
+	if err != nil {
+		return err
+	}
+
+	// send update profile event to kafka
+	// s.kafkaProducer.Produce(&kafka.UpdateProfileEvent{
+	// 	UserID: userID,
+	// 	Profile: profile,
+	// })
+	return nil
 }

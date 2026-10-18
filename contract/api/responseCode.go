@@ -18,6 +18,7 @@ var ResponseCodeString = map[int]ResponseCode{
 	http.StatusInternalServerError: {Code: "INTERNAL_SERVER_ERROR", Message: "INTERNAL_SERVER_ERROR"},
 	http.StatusBadRequest:          {Code: "BAD_REQUEST", Message: "BAD_REQUEST"},
 	http.StatusConflict:            {Code: "CONFLICT", Message: "CONFLICT"},
+	http.StatusUnprocessableEntity: {Code: "UNPROCESSABLE_ENTITY", Message: "UNPROCESSABLE_ENTITY"},
 }
 
 func ResponseWriter(w http.ResponseWriter, statusCode int, message string) {

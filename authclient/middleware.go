@@ -14,6 +14,13 @@ func ClaimsFromContext(ctx context.Context) (*Claims, bool) {
 	return c, ok
 }
 
+func UserID(ctx context.Context) string {
+	if c, ok := ClaimsFromContext(ctx); ok {
+		return c.Subject
+	}
+	return ""
+}
+
 func (v *Verifier) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token, ok := BearerToken(r)

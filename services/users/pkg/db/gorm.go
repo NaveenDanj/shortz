@@ -1,6 +1,7 @@
 package db
 
 import (
+	"config"
 	"log"
 	"time"
 
@@ -30,6 +31,15 @@ func ConnectPostgres(dsn string) (*Database, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, err
+	}
+	sqlDB.SetMaxOpenConns(config.PGPoolConsts.MaxOpenConnections)
+	sqlDB.SetMaxIdleConns(config.PGPoolConsts.MaxIdleConnections)
+	sqlDB.SetConnMaxLifetime(time.Duration(config.PGPoolConsts.ConnectionMaxLifeTime) * time.Minute)
+	sqlDB.SetConnMaxIdleTime(time.Duration(config.PGPoolConsts.ConnectionMaxIdleTime) * time.Minute)
 
 	return &Database{DB: db}, nil
 }

@@ -1,4 +1,3 @@
--- Auth user ids are random alphanumeric strings (not UUIDs), and users.id holds the auth `sub`.
 ALTER TABLE follows
     DROP CONSTRAINT follows_follower_id_fkey,
     DROP CONSTRAINT follows_followee_id_fkey;
