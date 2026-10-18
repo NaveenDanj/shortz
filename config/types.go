@@ -15,6 +15,13 @@ type UserConfig struct {
 	DatabaseURL    string
 	DatabaseDriver string
 	PORT           string
-	AuthIssuer     string // must equal the auth service's AUTH_BASE_URL
+	AuthIssuer     string
 	AuthJWKSURL    string
+}
+
+type GlobalPGPoolConsts struct {
+	MaxOpenConnections    int
+	MaxIdleConnections    int
+	ConnectionMaxLifeTime int
+	ConnectionMaxIdleTime int
 }

@@ -1,0 +1,33 @@
+meta {
+  name: update-profile
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{usersUrl}}/users/me
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "displayName": "Naveen Hettiwaththa",
+    "bio": "Backend dev learning system design. Building Shortz.",
+    "isPrivate": false,
+    "links": [
+      "https://github.com/Naveendanj",
+      "https://example.com/portfolio"
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  forwardAuthorizationHeader: false
+}

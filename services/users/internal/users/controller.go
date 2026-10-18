@@ -2,9 +2,9 @@ package users
 
 import (
 	"authclient"
+	"common/httpx"
 	apiContract "contract/api"
-	"errors"
-	"log"
+	apiUsers "contract/api/users"
 	"net/http"
 )
 
@@ -17,24 +17,29 @@ func NewController(service Service) *Controller {
 }
 
 func (c *Controller) GetMe(w http.ResponseWriter, r *http.Request) {
+	userID := authclient.UserID(r.Context())
 
-	claims, ok := authclient.ClaimsFromContext(r.Context())
-	if !ok || claims.Subject == "" {
-		apiContract.ResponseWriter(w, http.StatusUnauthorized, "Unauthorized")
-		return
-	}
-
-	user, err := c.service.GetMe(r.Context(), claims.Subject)
-	if errors.Is(err, ErrNotFound) {
-		apiContract.ResponseWriter(w, http.StatusNotFound, "Profile not found")
-		return
-	}
-
+	user, err := c.service.GetMe(r.Context(), userID)
 	if err != nil {
-		log.Printf("users: get me %s: %v", claims.Subject, err)
-		apiContract.ResponseWriter(w, http.StatusInternalServerError, "Internal server error")
+		httpx.WriteError(w, "get me", userID, err)
 		return
 	}
 
 	apiContract.ResponseWithDataWriter(w, http.StatusOK, user)
+}
+
+func (c *Controller) UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	userID := authclient.UserID(r.Context())
+
+	req, ok := httpx.DecodeAndValidate[apiUsers.UpdateUserRequest](w, r)
+	if !ok {
+		return
+	}
+
+	if err := c.service.UpdateProfile(r.Context(), userID, req); err != nil {
+		httpx.WriteError(w, "update profile", userID, err)
+		return
+	}
+
+	apiContract.ResponseWriter(w, http.StatusOK, "Profile updated successfully")
 }
