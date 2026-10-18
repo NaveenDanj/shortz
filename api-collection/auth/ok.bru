@@ -1,0 +1,19 @@
+meta {
+  name: ok
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{authUrl}}/ok
+  body: none
+  auth: none
+}
+
+headers {
+  Origin: {{origin}}
+}
+
+assert {
+  res.status: eq 200
+}

@@ -1,0 +1,24 @@
+meta {
+  name: users
+  seq: 2
+}
+
+script:pre-request {
+  // Make sure a fresh JWT is in {{token}} before every users request.
+  // If it is missing or about to expire, "auth/get-jwt" runs first
+  // (and that signs in / signs up when there is no session yet).
+  let expired = true;
+  const token = bru.getEnvVar("token");
+  if (token) {
+    try {
+      const part = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+      const payload = JSON.parse(Buffer.from(part, "base64").toString());
+      expired = payload.exp * 1000 < Date.now() + 30000;
+    } catch (e) {
+      expired = true;
+    }
+  }
+  if (expired) {
+    await bru.runRequest("auth/get-jwt");
+  }
+}

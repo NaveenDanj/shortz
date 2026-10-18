@@ -1,0 +1,19 @@
+meta {
+  name: get me - bad token (401)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{usersUrl}}/users/me
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer abc.def.ghi
+}
+
+assert {
+  res.status: eq 401
+}

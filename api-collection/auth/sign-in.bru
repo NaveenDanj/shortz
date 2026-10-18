@@ -1,0 +1,39 @@
+meta {
+  name: sign-in
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{authUrl}}/sign-in/email
+  body: json
+  auth: none
+}
+
+headers {
+  Origin: {{origin}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{email}}",
+    "password": "{{password}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  Signs in as the user created by sign-up and refreshes {{sessionCookie}}.
+}
+
+script:post-response {
+  if (res.status === 200) {
+      const raw = res.headers["set-cookie"] || [];
+      const cookies = Array.isArray(raw) ? raw : [raw];
+      bru.setEnvVar("sessionCookie", cookies.map((c) => c.split(";")[0]).join("; "));
+  }
+}

@@ -1,0 +1,25 @@
+meta {
+  name: revoke-other-sessions
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{authUrl}}/revoke-other-sessions
+  body: json
+  auth: none
+}
+
+headers {
+  Origin: {{origin}}
+  Cookie: {{sessionCookie}}
+  Content-Type: application/json
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+}
