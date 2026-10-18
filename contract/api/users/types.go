@@ -13,4 +13,5 @@ type User struct {
 	IsPrivate      bool     `json:"isPrivate"`
 	CreatedAt      string   `json:"createdAt"`
 	UpdatedAt      string   `json:"updatedAt"`
+	DeletedAt      *string  `json:"deletedAt,omitempty"`
 }

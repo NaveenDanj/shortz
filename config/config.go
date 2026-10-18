@@ -23,6 +23,7 @@ func InitConfig() (*Config, error) {
 		UserConfig: UserConfig{
 			DatabaseURL:    loadConfigFromEnv("USERS_DB_URL", ""),
 			DatabaseDriver: loadConfigFromEnv("USERS_DB_DRIVER", "pgx"),
+			PORT:           loadConfigFromEnv("USERS_PORT", "3002"),
 		},
 	}, nil
 }
