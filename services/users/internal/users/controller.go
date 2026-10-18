@@ -6,6 +6,8 @@ import (
 	apiContract "contract/api"
 	apiUsers "contract/api/users"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type Controller struct {
@@ -28,6 +30,23 @@ func (c *Controller) GetMe(w http.ResponseWriter, r *http.Request) {
 	apiContract.ResponseWithDataWriter(w, http.StatusOK, user)
 }
 
+func (c *Controller) CreateProfile(w http.ResponseWriter, r *http.Request) {
+	userID := authclient.UserID(r.Context())
+
+	req, ok := httpx.DecodeAndValidate[apiUsers.CreateUserRequest](w, r)
+	if !ok {
+		return
+	}
+
+	user, err := c.service.CreateProfile(r.Context(), userID, req)
+	if err != nil {
+		httpx.WriteError(w, "create profile", userID, err)
+		return
+	}
+
+	apiContract.ResponseWithDataWriter(w, http.StatusCreated, user)
+}
+
 func (c *Controller) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	userID := authclient.UserID(r.Context())
 
@@ -42,4 +61,17 @@ func (c *Controller) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	apiContract.ResponseWriter(w, http.StatusOK, "Profile updated successfully")
+}
+
+func (c *Controller) GetPublicProfile(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userID := vars["id"]
+
+	user, err := c.service.GetMe(r.Context(), userID)
+	if err != nil {
+		httpx.WriteError(w, "get public profile", userID, err)
+		return
+	}
+
+	apiContract.ResponseWithDataWriter(w, http.StatusOK, user)
 }

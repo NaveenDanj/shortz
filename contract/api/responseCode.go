@@ -12,6 +12,7 @@ type ResponseCode struct {
 
 var ResponseCodeString = map[int]ResponseCode{
 	http.StatusOK:                  {Code: "OK", Message: "OK"},
+	http.StatusCreated:             {Code: "CREATED", Message: "CREATED"},
 	http.StatusUnauthorized:        {Code: "UNAUTHORIZED", Message: "UNAUTHORIZED"},
 	http.StatusForbidden:           {Code: "FORBIDDEN", Message: "FORBIDDEN"},
 	http.StatusNotFound:            {Code: "NOT_FOUND", Message: "NOT_FOUND"},
