@@ -1,0 +1,42 @@
+meta {
+  name: get-jwt
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{authUrl}}/token
+  body: none
+  auth: none
+}
+
+headers {
+  Origin: {{origin}}
+  Cookie: {{sessionCookie}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  Exchanges the session cookie for a 15 minute JWT and stores it in {{token}}.
+  If there is no session yet it signs in (or signs up first when no user exists).
+}
+
+script:pre-request {
+  if (!bru.getEnvVar("sessionCookie")) {
+    if (bru.getEnvVar("email")) {
+      await bru.runRequest("auth/sign-in");
+    } else {
+      await bru.runRequest("auth/sign-up");
+    }
+  }
+  req.setHeader("Cookie", bru.getEnvVar("sessionCookie"));
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.token) {
+    bru.setEnvVar("token", res.body.token);
+  }
+}

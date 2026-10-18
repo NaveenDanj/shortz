@@ -1,0 +1,51 @@
+meta {
+  name: sign-up
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{authUrl}}/sign-up/email
+  body: json
+  auth: none
+}
+
+headers {
+  Origin: {{origin}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{email}}",
+    "password": "{{password}}",
+    "name": "Naveendanj"
+  }
+}
+
+vars:pre-request {
+  email: naveenhettiwaththa@gmail.com
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:pre-request {
+  const email = "user" + Date.now() + "@example.com";
+  bru.setEnvVar("email", email);
+  req.setBody({ email: email, password: bru.getEnvVar("password"), name: "Test User" });
+}
+
+script:post-response {
+  if (res.status === 200) {
+      const raw = res.headers["set-cookie"] || [];
+      const cookies = Array.isArray(raw) ? raw : [raw];
+      bru.setEnvVar("sessionCookie", cookies.map((c) => c.split(";")[0]).join("; "));
+  }
+}
+
+docs {
+  Creates a brand new user (random email each run) and stores the session cookie in {{sessionCookie}}.
+  Passwords must be 8-64 characters.
+}

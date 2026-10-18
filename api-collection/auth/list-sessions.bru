@@ -1,0 +1,20 @@
+meta {
+  name: list-sessions
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{authUrl}}/list-sessions
+  body: none
+  auth: none
+}
+
+headers {
+  Origin: {{origin}}
+  Cookie: {{sessionCookie}}
+}
+
+assert {
+  res.status: eq 200
+}

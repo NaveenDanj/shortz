@@ -1,0 +1,24 @@
+meta {
+  name: get me
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{usersUrl}}/users/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: isNumber
+}
+
+docs {
+  GET /users/me. 200 with the profile, or 404 when the signed-in user has no profile row yet
+  (profile creation is not implemented yet). The JWT is refreshed by the folder script.
+}

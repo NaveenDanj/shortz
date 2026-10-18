@@ -1,0 +1,24 @@
+meta {
+  name: me (auth service)
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{authHost}}/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  The auth service's own /me route (mounted at the root, not /api/auth).
+  Needs a valid JWT - run get-jwt first.
+}
