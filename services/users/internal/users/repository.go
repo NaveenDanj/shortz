@@ -6,7 +6,15 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
+)
+
+// unique constraints/indexes created by the migrations
+const (
+	constraintUsersPK        = "users_pkey"
+	constraintUsernameUnique = "users_username_lower_uidx"
 )
 
 // table users
@@ -19,6 +27,7 @@ const (
 
 type Repository interface {
 	FindByID(ctx context.Context, id string) (*Users, error)
+	Create(ctx context.Context, id string, profile *apiContract.CreateUserRequest) (*Users, error)
 	UpdateProfile(ctx context.Context, id string, profile *apiContract.UpdateUserRequest) error
 }
 
@@ -42,9 +51,39 @@ func (r *repository) FindByID(ctx context.Context, id string) (*Users, error) {
 	return &user, nil
 }
 
+func (r *repository) Create(ctx context.Context, id string, profile *apiContract.CreateUserRequest) (*Users, error) {
+	links := profile.Links
+	if links == nil {
+		links = []string{}
+	}
+
+	user := Users{
+		Id:          id,
+		Username:    profile.Username,
+		DisplayName: profile.DisplayName,
+		Bio:         profile.Bio,
+		Links:       links,
+		IsPrivate:   profile.IsPrivate,
+	}
+
+	if err := r.db.WithContext(ctx).Create(&user).Error; err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
+			switch pgErr.ConstraintName {
+			case constraintUsersPK:
+				return nil, apiContract.ErrProfileExists
+			case constraintUsernameUnique:
+				return nil, apiContract.ErrUsernameTaken
+			}
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (r *repository) UpdateProfile(ctx context.Context, id string, profile *apiContract.UpdateUserRequest) error {
-	// Updates(map) bypasses the model's serializer tag, so a []string would be
-	// expanded into a SQL row. Encode links ourselves and cast to jsonb.
+
 	links := profile.Links
 	if links == nil {
 		links = []string{}

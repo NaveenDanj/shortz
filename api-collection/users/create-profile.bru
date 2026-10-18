@@ -1,0 +1,34 @@
+meta {
+  name: create-profile
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{usersUrl}}/users/me
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "username": "naveendanj",
+    "displayName": "Naveen Hettiwaththa",
+    "bio": "Backend dev learning system design. Building Shortz.",
+    "isPrivate": false,
+    "links": [
+      "https://github.com/Naveendanj",
+      "https://example.com/portfolio"
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  forwardAuthorizationHeader: false
+}

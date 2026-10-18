@@ -1,0 +1,19 @@
+meta {
+  name: get public profile
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{usersUrl}}/users/AEYLFIr2x6aqg58ZeTSHBXbJW09P9dKf
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer abc.def.ghi
+}
+
+assert {
+  res.status: eq 401
+}

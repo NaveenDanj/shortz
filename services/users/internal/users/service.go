@@ -8,6 +8,7 @@ import (
 
 type Service interface {
 	GetMe(ctx context.Context, userID string) (*apiUsers.User, error)
+	CreateProfile(ctx context.Context, userID string, profile *apiUsers.CreateUserRequest) (*apiUsers.User, error)
 	UpdateProfile(ctx context.Context, userID string, profile *apiUsers.UpdateUserRequest) error
 }
 
@@ -25,6 +26,35 @@ func (s *service) GetMe(ctx context.Context, userID string) (*apiUsers.User, err
 		return nil, err
 	}
 
+	return toUser(user), nil
+}
+
+func (s *service) CreateProfile(ctx context.Context, userID string, profile *apiUsers.CreateUserRequest) (*apiUsers.User, error) {
+	user, err := s.repo.Create(ctx, userID, profile)
+	if err != nil {
+		return nil, err
+	}
+
+	// publish profile.created event
+
+	return toUser(user), nil
+}
+
+func (s *service) UpdateProfile(ctx context.Context, userID string, profile *apiUsers.UpdateUserRequest) error {
+	err := s.repo.UpdateProfile(ctx, userID, profile)
+	if err != nil {
+		return err
+	}
+
+	// send update profile event to kafka
+	// s.kafkaProducer.Produce(&kafka.UpdateProfileEvent{
+	// 	UserID: userID,
+	// 	Profile: profile,
+	// })
+	return nil
+}
+
+func toUser(user *Users) *apiUsers.User {
 	links := user.Links
 	if links == nil {
 		links = []string{}
@@ -43,19 +73,5 @@ func (s *service) GetMe(ctx context.Context, userID string) (*apiUsers.User, err
 		IsPrivate:      user.IsPrivate,
 		CreatedAt:      user.CreatedAt,
 		UpdatedAt:      user.UpdatedAt,
-	}, nil
-}
-
-func (s *service) UpdateProfile(ctx context.Context, userID string, profile *apiUsers.UpdateUserRequest) error {
-	err := s.repo.UpdateProfile(ctx, userID, profile)
-	if err != nil {
-		return err
 	}
-
-	// send update profile event to kafka
-	// s.kafkaProducer.Produce(&kafka.UpdateProfileEvent{
-	// 	UserID: userID,
-	// 	Profile: profile,
-	// })
-	return nil
 }
