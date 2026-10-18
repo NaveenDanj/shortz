@@ -11,7 +11,6 @@ type User struct {
 	VideoCount     int      `json:"videoCount"`
 	Links          []string `json:"links"`
 	IsPrivate      bool     `json:"isPrivate"`
-	CreatedAt      string   `json:"createdAt"`
-	UpdatedAt      string   `json:"updatedAt"`
-	DeletedAt      *string  `json:"deletedAt,omitempty"`
+	CreatedAt      int64    `json:"createdAt"`
+	UpdatedAt      int64    `json:"updatedAt"`
 }

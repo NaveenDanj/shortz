@@ -23,6 +23,8 @@ services:
       - "${USERS_PORT}:${USERS_PORT}"
     environment:
       USERS_PORT: ${USERS_PORT}
+      USERS_AUTH_ISSUER: ${AUTH_BASE_URL}
+      USERS_AUTH_JWKS_URL: http://auth:8080/api/auth/jwks
       USERS_DB_URL: postgres://users_user:users_password@postgres:5432/users_db?sslmode=disable
     depends_on:
       postgres:
