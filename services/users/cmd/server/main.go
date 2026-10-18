@@ -23,7 +23,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	router := app.SetupRouter(cfg, database.DB)
+	router, err := app.SetupRouter(cfg, database.DB)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	log.Printf("Server running on port %s", cfg.UserConfig.PORT)
 	log.Fatal(http.ListenAndServe(":"+cfg.UserConfig.PORT, router))
